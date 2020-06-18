@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','avatar', 'status'
+        'name', 'email', 'password','avatar', 'status','created_on'
     ];
       public $timestamps = false;
 
@@ -39,10 +39,5 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    public static function logindata($data){
-        
-        $user = User::where('email','=',$data['email'])->get();
-        //$password = Hash::check($data['password'], $user->password);
-        print_r($user->password); exit;
-    }
+    
 }

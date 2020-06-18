@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\User;
 use Auth;
+use Validator;
 
 class UserController extends Controller
 {
@@ -24,8 +25,45 @@ class UserController extends Controller
             }
     
     }
+  
+
+      public function register(Request $request){
+          $data = $request->all();
+
+       $validation = Validator::make($data,[
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'confirmed'],
+             'avator' => ['image','mimes:jpeg,png,jpg','max:2048']
 
 
+        ]);
+      
+      if ($validation->fails()) {
+            return response()->json(['error'=>$validation->errors()],400);
+        }
+        else{
+
+      if ($request->hasFile('avator')) {
+		        
+		        $image = $request->file('avator');
+		        $data['avatar'] = time().'.'.$image->getClientOriginalExtension();
+		        $destinationPath = public_path('uploads/avator/');
+		        $image->move($destinationPath,$data['avatar']);
+             }
+
+
+             $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'avatar'=>url('public/uploads/avator/'.$data['avatar']),
+            'created_on'=>date('y-m-d h:m:s')
+        ]);
+              return response()->json(['msg'=>'register user successfully','data'=>$user],200);
+        }
+
+    }
 
 
 }
