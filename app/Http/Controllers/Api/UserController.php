@@ -12,16 +12,37 @@ use Validator;
 class UserController extends Controller
 {
     public function login(Request $request){
+     
+    $data = $request->all();
+    
+   $validation = Validator::make($data,[
+            
+           'email' => ['required', 'string', 'email'],
+           'password' => ['required'],
+
+        ]);
+ 
+    if ($validation->fails()) {
+            return response()->json(['error'=>$validation->errors()],400);
+        }
+       
+
+
+
     	 $data['email'] = $request->input('email');
     	 $data['password'] =  $request->input('password');
 
     	  if (Auth::attempt(array('email' => $data['email'], 'password' => $data['password']))){
 
-    	  	$accessToken =  str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($data['email'].$data['password']));
-             return response()->json(['msg'=>"successfully login ","status"=>true,'accesstoken'=>$accessToken],200);
+
+              $user = User::find(Auth::id());
+              $accessToken =  str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($data['email'].date('y-m-d')));
+              $user->login_token = $accessToken;
+              $user->save();
+              return response()->json(['msg'=>"successfully login ","status"=>true,'accesstoken'=>$accessToken],200);
             }
             else {        
-             return response()->json(['msg'=>"something wrong with this api ","status"=>false],400);
+              return response()->json(['msg'=>"something wrong with this api ","status"=>false],400);
             }
     
     }
