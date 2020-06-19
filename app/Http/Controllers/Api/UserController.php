@@ -14,7 +14,7 @@ class UserController extends Controller
     public function login(Request $request){
      
     $data = $request->all();
-    
+  
    $validation = Validator::make($data,[
             
            'email' => ['required', 'string', 'email'],
@@ -34,15 +34,15 @@ class UserController extends Controller
 
     	  if (Auth::attempt(array('email' => $data['email'], 'password' => $data['password']))){
 
-
+             
               $user = User::find(Auth::id());
               $accessToken =  str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($data['email'].date('y-m-d')));
               $user->login_token = $accessToken;
               $user->save();
-              return response()->json(['msg'=>"successfully login ","status"=>true,'accesstoken'=>$accessToken],200);
+              return response()->json(['msg'=>"successfully login ","status"=>true,'accesstoken'=>$accessToken,'login_id'=>$user->id],200);
             }
             else {        
-              return response()->json(['msg'=>"something wrong with this api ","status"=>false],400);
+              return response()->json(['msg'=>'unauthorize user' ,"status"=>false],401);
             }
     
     }
@@ -55,7 +55,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed'],
-             'avator' => ['image','mimes:jpeg,png,jpg','max:2048']
+            'avator' => ['image','mimes:jpeg,png,jpg','max:2048']
 
 
         ]);
@@ -84,6 +84,32 @@ class UserController extends Controller
               return response()->json(['msg'=>'register user successfully','data'=>$user],200);
         }
 
+    }
+   
+    public function loggout($token)
+    {
+        if($token=='')
+        {
+          return response()->json(['msg'=>'Unauthorize User','success'=>false],401);
+        }
+        else
+        {
+            $user = User::usercount($token);
+            if($user == 0)
+              {
+                  return response()->json(['msg'=>'Token invalid','success'=>false],400);
+              }
+            else
+              {
+                $user_token = User::find($user[0]['id']);
+                $user_token->login_token='';
+                $user_token->save();
+                return response()->json(['msg'=>'Logout Successfully','success'=>'true'],200);
+              }
+         
+        }
+     
+    
     }
 
 

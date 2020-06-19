@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','avatar', 'status','created_on'
+        'name', 'email', 'password','avatar', 'status','created_on','login_token'
     ];
       public $timestamps = false;
 
@@ -39,5 +39,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-    
+    public static function usercount($token){
+        $user  =  User::select('*')->where('login_token','=',$token)->get();
+      // print_r($user->count()); exit;
+        if($user->count()){
+            return $user->toArray();
+        }
+        else{
+            return 0;
+        }
+    }
 }
